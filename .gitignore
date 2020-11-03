@@ -1,0 +1,15 @@
+.vs
+SSU.Gadzhimuradov.Graph.sln
+Graph/bin/
+Graph/obj/
+Graph/Properties/
+Graph/Graph.csproj
+SSU.Gadzhimuradov.Graph/bin/
+SSU.Gadzhimuradov.Graph/obj/
+SSU.Gadzhimuradov.Graph/Properties/
+SSU.Gadzhimuradov.Graph/SSU.Gadzhimuradov.Graph.csproj
+SSU.Gadzhimuradov.Graph/App.config
+SSU.Gadzhimuradov.Graph/input.txt
+SSU.Gadzhimuradov.Graph/input1.txt
+SSU.Gadzhimuradov.Graph/input2.txt
+SSU.Gadzhimuradov.Graph/output.txt

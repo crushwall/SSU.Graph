@@ -344,6 +344,45 @@ namespace Graph
 
         #region ALGORITHMS
 
+        public Dictionary<T, T> BFS(T v)
+        {
+            Dictionary<T, double> d = new Dictionary<T, double>(_graph.Count);
+            Dictionary<T, T> parents = new Dictionary<T, T>();
+
+            SortedSet<T> set = new SortedSet<T>();
+
+            T tempV = v;
+            d.Add(v, 0);
+            set.Add(v);
+            parents[v] = v;
+
+            while (set.Count != 0)
+            {
+                tempV = set.Min;
+                set.Remove(set.Min);
+
+                foreach (var u in _graph[tempV])
+                {
+                    if (d.ContainsKey(u.Key) && (d[u.Key] > d[tempV] + u.Value))
+                    {
+                        set.Remove(u.Key);
+
+                        d[u.Key] = d[tempV] + 1;
+                        parents[u.Key] = tempV;
+                        set.Add(u.Key);
+                    }
+                    else if (!parents.ContainsKey(u.Key))
+                    {
+                        d.Add(u.Key, d[tempV] + 1);
+                        parents.Add(u.Key, tempV);
+                        set.Add(u.Key);
+                    }
+                }
+            }
+
+            return parents;
+        }
+
         public Dictionary<T, double> Dijkstra(T v)
         {
             Dictionary<T, T> parents;
@@ -399,14 +438,45 @@ namespace Graph
             Stack<T> way = new Stack<T>();
 
             T temp = to;
-            while (!parents[temp].Equals(temp))
+            if (parents.ContainsKey(temp))
             {
+                while (!parents[temp].Equals(temp))
+                {
+                    way.Push(temp);
+                    temp = parents[temp];
+                }
                 way.Push(temp);
-                temp = parents[temp];
             }
-            way.Push(temp);
 
             return way;
+        }
+
+        public static Dictionary<T, Stack<T>> GetWaysToAll(Dictionary<T, T> parents)
+        {
+            Dictionary<T, Stack<T>> allWays = new Dictionary<T, Stack<T>>();
+
+            while (allWays.Count != parents.Count)
+            {
+                foreach (var p in parents)
+                {
+                    Stack<T> way = new Stack<T>();
+
+                    T temp = p.Key;
+                    if (parents.ContainsKey(temp))
+                    {
+                        while (!parents[temp].Equals(temp))
+                        {
+                            way.Push(temp);
+                            temp = parents[temp];
+                        }
+                        way.Push(temp);
+                    }
+
+                    allWays.Add(p.Key, way);
+                }
+            }
+
+            return allWays;
         }
 
         #endregion

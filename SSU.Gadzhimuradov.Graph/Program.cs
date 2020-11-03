@@ -14,6 +14,8 @@ namespace SSU.Gadzhimuradov.Graph
             //Tasks.A1Ex17();
             //Tasks.B1Ex10();
 
+            Tasks.A2Ex28();
+
             Console.ReadKey(true);
         }
     }

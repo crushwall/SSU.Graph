@@ -7,7 +7,7 @@ namespace SSU.Gadzhimuradov
 {
     static class Tasks
     {
-        static Graph<int> g = new Graph<int>("../../input2.txt");
+        static Graph<int> g = new Graph<int>("../../input.txt");
 
         public static void Test()
         {
@@ -59,6 +59,8 @@ namespace SSU.Gadzhimuradov
 
         public static void A1Ex17()
         {
+            g.Show();
+
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("\n№17. Введите веришины:");
             Console.ForegroundColor = ConsoleColor.Gray;
@@ -104,7 +106,31 @@ namespace SSU.Gadzhimuradov
 
         public static void A2Ex28()
         {
+            g.Show();
 
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("\n№28. Введитe веришину:");
+            Console.ForegroundColor = ConsoleColor.Gray;
+
+            int v = int.Parse(Console.ReadLine());
+
+            Dictionary<int, int> parents = g.BFS(v);
+
+            var ways = Graph<int>.GetWaysToAll(parents);
+
+            foreach (var u in ways)
+            {
+                Console.Write($"Путь до {u.Key}: ");
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                foreach (var p in u.Value)
+                {
+                    Console.Write($"{p} ");
+                }
+                Console.ForegroundColor = ConsoleColor.Gray;
+
+                Console.WriteLine();
+            }
+            Console.ForegroundColor = ConsoleColor.Gray;
         }
     }
 }
