@@ -10,11 +10,16 @@ namespace SSU.Gadzhimuradov.Graph
     {
         static void Main(string[] args)
         {
+            //Tasks.Test();
+
             //Tasks.A1Ex16();
             //Tasks.A1Ex17();
             //Tasks.B1Ex10();
 
-            Tasks.A2Ex28();
+            Tasks.A2Ex22();
+            //Tasks.A2Ex28();
+
+            //Tasks.A3Boruvka();
 
             Console.ReadKey(true);
         }

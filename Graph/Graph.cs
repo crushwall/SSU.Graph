@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -84,6 +85,12 @@ namespace Graph
 
         public Graph() { }
 
+        public Graph(bool directed, bool weighted)
+        {
+            _directed = directed;
+            _weighted = weighted;
+        }
+
         public Graph(string path) : this(path, separator: ' ', directed: false, weighted: false) { }
 
         public Graph(string path, bool directed) : this(path, separator: ' ', directed, weighted: false) { }
@@ -128,18 +135,15 @@ namespace Graph
 
         public Graph(Graph<T> g)
         {
-            Graph<T> newG = new Graph<T>();
+            _weighted = g._weighted;
+            _directed = g._directed;
 
-            newG._weighted = g._weighted;
-            newG._directed = g._directed;
+            _graph = new Dictionary<T, Dictionary<T, double>>();
 
-            newG._graph = new Dictionary<T, Dictionary<T, double>>(g._graph);
-
-            //foreach (var v in g._graph)
-            //{
-            //    T temp = v.Key;
-            //    newG._graph.Add(temp, );
-            //}
+            foreach (var v in g._graph)
+            {
+                _graph.Add(v.Key, new Dictionary<T, double>(v.Value));
+            }
         }
 
         public Graph(SerializationInfo info, StreamingContext context)
@@ -344,43 +348,79 @@ namespace Graph
 
         #region ALGORITHMS
 
-        public Dictionary<T, T> BFS(T v)
+        public Dictionary<T, int> BFS(T v)
         {
-            Dictionary<T, double> d = new Dictionary<T, double>(_graph.Count);
-            Dictionary<T, T> parents = new Dictionary<T, T>();
+            Dictionary<T, T> parents;
 
-            SortedSet<T> set = new SortedSet<T>();
+            return BFS(v, out parents);
+        }
+
+        public Dictionary<T, int> BFS(T v, out Dictionary<T, T> parents)
+        {
+            Dictionary<T, int> d = new Dictionary<T, int>(_graph.Count);
+            parents = new Dictionary<T, T>();
+
+            Queue<T> queue = new Queue<T>();
 
             T tempV = v;
             d.Add(v, 0);
-            set.Add(v);
+            queue.Enqueue(v);
             parents[v] = v;
 
-            while (set.Count != 0)
+            while (queue.Count != 0)
             {
-                tempV = set.Min;
-                set.Remove(set.Min);
+                tempV = queue.Dequeue();
 
                 foreach (var u in _graph[tempV])
                 {
-                    if (d.ContainsKey(u.Key) && (d[u.Key] > d[tempV] + u.Value))
-                    {
-                        set.Remove(u.Key);
-
-                        d[u.Key] = d[tempV] + 1;
-                        parents[u.Key] = tempV;
-                        set.Add(u.Key);
-                    }
-                    else if (!parents.ContainsKey(u.Key))
+                    if (!d.ContainsKey(u.Key))
                     {
                         d.Add(u.Key, d[tempV] + 1);
                         parents.Add(u.Key, tempV);
-                        set.Add(u.Key);
+                        queue.Enqueue(u.Key);
                     }
                 }
             }
 
-            return parents;
+            return d;
+        }
+
+        public bool IsCyclic()
+        {
+            T cycle;
+            return IsCyclic(out cycle);
+        }
+
+        public bool IsCyclic(out T cycle)
+        {
+            cycle = default(T);
+
+            Stack<T> stack = new Stack<T>();
+            List<T> used = new List<T>();
+
+            T tempV = _graph.First().Key;
+            stack.Push(tempV);
+
+            while (stack.Count != 0)
+            {
+                foreach (var u in _graph[tempV])
+                {
+                    if (!used.Contains(u.Key) && !stack.Contains(u.Key))
+                    {
+                        stack.Push(u.Key);
+                    }
+                    else if (!used.Contains(u.Key) && stack.Contains(u.Key))
+                    {
+                        cycle = _graph[tempV].Count >= _graph[u.Key].Count ? u.Key : tempV;
+                        return true;
+                    }
+                }
+
+                used.Add(tempV);
+                tempV = stack.Pop();
+            }
+            
+            return false;
         }
 
         public Dictionary<T, double> Dijkstra(T v)
@@ -433,6 +473,31 @@ namespace Graph
             return d;
         }
 
+        public Graph<T> Boruvka()
+        {
+            Graph<T> tree = new Graph<T>(false, _weighted);
+            foreach (var v in _graph)
+            {
+                tree._graph.Add(v.Key, new Dictionary<T, double>());
+            }
+
+            int addedEdge = 0;
+
+            while (addedEdge < tree._graph.Count)
+            {
+                Dictionary<Dictionary<T, T>, double> components = new Dictionary<Dictionary<T, T>, double>();
+
+                foreach (var v in tree._graph)
+                {
+                    
+
+                    
+                }
+            }
+
+            return tree;
+        }
+
         public static Stack<T> GetWayTo(Dictionary<T, T> parents, T to)
         {
             Stack<T> way = new Stack<T>();
@@ -455,25 +520,22 @@ namespace Graph
         {
             Dictionary<T, Stack<T>> allWays = new Dictionary<T, Stack<T>>();
 
-            while (allWays.Count != parents.Count)
+            foreach (var p in parents)
             {
-                foreach (var p in parents)
+                Stack<T> way = new Stack<T>();
+
+                T temp = p.Key;
+                if (parents.ContainsKey(temp))
                 {
-                    Stack<T> way = new Stack<T>();
-
-                    T temp = p.Key;
-                    if (parents.ContainsKey(temp))
+                    while (!parents[temp].Equals(temp))
                     {
-                        while (!parents[temp].Equals(temp))
-                        {
-                            way.Push(temp);
-                            temp = parents[temp];
-                        }
                         way.Push(temp);
+                        temp = parents[temp];
                     }
-
-                    allWays.Add(p.Key, way);
+                    way.Push(temp);
                 }
+
+                allWays.Add(p.Key, way);
             }
 
             return allWays;

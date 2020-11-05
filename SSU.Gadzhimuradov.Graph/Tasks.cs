@@ -11,30 +11,59 @@ namespace SSU.Gadzhimuradov
 
         public static void Test()
         {
+            var g1 = new Graph<int>(g);
+
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("\nИзначальный граф:");
+            Console.ForegroundColor = ConsoleColor.Gray;
             g.Show();
-            Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("\nГраф копия:");
+            Console.ForegroundColor = ConsoleColor.Gray;
+            g1.Show();
 
-            Dictionary<int, int> parents = new Dictionary<int, int>();
+            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.WriteLine("\nДобавляем вершину 8.");
+            Console.ForegroundColor = ConsoleColor.Gray;
+            g1.AddVertex(8);
 
-            Dictionary<int, double> d = g.Dijkstra(1, out parents);
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("\nИзначальный граф:");
+            Console.ForegroundColor = ConsoleColor.Gray;
+            g.Show();
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("\nГраф копия:");
+            Console.ForegroundColor = ConsoleColor.Gray;
+            g1.Show();
 
-            foreach (var v in d)
-            {
-                Console.WriteLine($"\t{{{v.Key}, {v.Value}}}");
-            }
+            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.WriteLine("\nУдаляем вершину 1.");
+            Console.ForegroundColor = ConsoleColor.Gray;
+            g1.RemoveVertex(1);
 
-            Console.WriteLine("Parents:");
-            foreach (var v in parents)
-            {
-                Console.WriteLine($"\t[{v.Key}, {v.Value}]");
-            }
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("\nИзначальный граф:");
+            Console.ForegroundColor = ConsoleColor.Gray;
+            g.Show();
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("\nГраф копия:");
+            Console.ForegroundColor = ConsoleColor.Gray;
+            g1.Show();
 
-            var way = Graph<int>.GetWayTo(parents, 5);
+            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.WriteLine("\nДобавлем ребро 2 -> 8.");
+            Console.ForegroundColor = ConsoleColor.Gray;
+            g1.AddEdge(2, 8);
 
-            foreach (var w in way)
-            {
-                Console.Write($"{w} ");
-            }
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("\nИзначальный граф:");
+            Console.ForegroundColor = ConsoleColor.Gray;
+            g.Show();
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("\nГраф копия:");
+            Console.ForegroundColor = ConsoleColor.Gray;
+            g1.Show();
+
         }
 
         public static void A1Ex16()
@@ -104,6 +133,32 @@ namespace SSU.Gadzhimuradov
             gd.Show();
         }
 
+        public static void A2Ex22()
+        {
+            g.Show();
+
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("\n№22.");
+            Console.ForegroundColor = ConsoleColor.Gray;
+
+            int removable;
+            List<int> r = new List<int>();
+
+            while (g.IsCyclic(out removable))
+            {
+                r.Add(removable);
+                g.RemoveVertex(removable);
+            }
+
+            g.Show();
+
+            Console.Write($"\nБыло удалено ");
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.Write(r.Count);
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.Write($" вершин.\n{(r.Count <= 1 ? "Можно" : "Нельзя")} удалить одну вершину, чтобы получилось дерево.");
+        }
+
         public static void A2Ex28()
         {
             g.Show();
@@ -114,13 +169,14 @@ namespace SSU.Gadzhimuradov
 
             int v = int.Parse(Console.ReadLine());
 
-            Dictionary<int, int> parents = g.BFS(v);
+            Dictionary<int, int> parents;
+            Dictionary<int, int> d = g.BFS(v, out parents);
 
             var ways = Graph<int>.GetWaysToAll(parents);
 
             foreach (var u in ways)
             {
-                Console.Write($"Путь до {u.Key}: ");
+                Console.Write($"Путь до {u.Key} [{d[u.Key]}]: ");
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 foreach (var p in u.Value)
                 {
@@ -131,6 +187,23 @@ namespace SSU.Gadzhimuradov
                 Console.WriteLine();
             }
             Console.ForegroundColor = ConsoleColor.Gray;
+        }
+
+        public static void A3Boruvka()
+        {
+            g.Show();
+
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("\nАлгоритм Борувки.");
+            Console.ForegroundColor = ConsoleColor.Gray;
+
+            Graph<int> tree = g.Boruvka();
+
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("\nМинимальное остовное дерево:");
+            Console.ForegroundColor = ConsoleColor.Gray;
+
+            tree.Show();
         }
     }
 }
