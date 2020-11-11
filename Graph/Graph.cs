@@ -294,7 +294,7 @@ namespace Graph
             union._weighted = _weighted;
 
             union._graph = _graph.Union(otherGraph._graph).GroupBy(pair => pair.Key).
-                ToDictionary(gr => gr.Key, gr => gr.SelectMany(pair => pair.Value).Distinct().ToDictionary(grr => grr.Key, grr => grr.Value));
+                ToDictionary(gr => gr.Key, gr => gr.SelectMany(pair => pair.Value).Distinct().ToDictionary(pair => pair.Key, pair => pair.Value));
 
             return union;
         }
@@ -399,7 +399,7 @@ namespace Graph
             List<T> used = new List<T>();
 
             T tempV = _graph.First().Key;
-            stack.Push(tempV);
+            stack.Push(tempV);  
 
             while (stack.Count != 0)
             {
@@ -473,31 +473,6 @@ namespace Graph
             return d;
         }
 
-        public Graph<T> Boruvka()
-        {
-            Graph<T> tree = new Graph<T>(false, _weighted);
-            foreach (var v in _graph)
-            {
-                tree._graph.Add(v.Key, new Dictionary<T, double>());
-            }
-
-            int addedEdge = 0;
-
-            while (addedEdge < tree._graph.Count)
-            {
-                Dictionary<Dictionary<T, T>, double> components = new Dictionary<Dictionary<T, T>, double>();
-
-                foreach (var v in tree._graph)
-                {
-                    
-
-                    
-                }
-            }
-
-            return tree;
-        }
-
         public static Stack<T> GetWayTo(Dictionary<T, T> parents, T to)
         {
             Stack<T> way = new Stack<T>();
@@ -541,6 +516,136 @@ namespace Graph
             return allWays;
         }
 
+        public Graph<T> Boruvka()
+        {
+            Graph<T> tree = new Graph<T>(false, _weighted);
+            Dictionary<List<T>, KeyValuePair<T, T>> components = new Dictionary<List<T>, KeyValuePair<T, T>>();
+            Dictionary<List<T>, KeyValuePair<T, T>> componentsTemp = new Dictionary<List<T>, KeyValuePair<T, T>>();
+
+            foreach (var v in _graph)
+            {
+                tree._graph.Add(v.Key, new Dictionary<T, double>());
+
+                List<T> temp = new List<T>();
+                temp.Add(v.Key);
+                T to = v.Value.OrderBy(pair => pair.Value).FirstOrDefault().Key;
+                components.Add(temp, new KeyValuePair<T, T>(v.Key, to));
+                componentsTemp.Add(temp, new KeyValuePair<T, T>(v.Key, to));
+            }
+
+            int k = 0;
+            while (k < _graph.Count - 1)
+            {
+                foreach (var comp in components)
+                {
+                    if (!tree._graph[comp.Value.Key].ContainsKey(comp.Value.Value))
+                    {
+                        tree._graph[comp.Value.Key].Add(comp.Value.Value, _graph[comp.Value.Key][comp.Value.Value]);
+                        tree._graph[comp.Value.Value].Add(comp.Value.Key, _graph[comp.Value.Key][comp.Value.Value]);
+                        k++;
+                    }
+
+                    var fromComp = componentsTemp.Keys.Where(l => l.Contains(comp.Value.Key)).FirstOrDefault();
+                    //componentsTemp.Remove(fromComp);
+                    var toComp = componentsTemp.Keys.Where(l => l.Contains(comp.Value.Value)).FirstOrDefault();
+                    fromComp = fromComp.Union(toComp).ToList();
+                    componentsTemp.Remove(toComp);
+
+                    T from = default(T);
+                    T to = default(T);
+                    double minWeight = double.MaxValue;
+                    foreach (var v in fromComp)
+                    {
+                        foreach (var adj in _graph[v])
+                        {
+                            if (adj.Value < minWeight && !fromComp.Contains(adj.Key))
+                            {
+                                minWeight = adj.Value;
+
+                                from = v;
+                                to = adj.Key;
+                            }
+                        }
+                    }
+
+
+                    componentsTemp[fromComp] = new KeyValuePair<T, T>(from, to);
+                    //componentsTemp.Add(fromComp, new KeyValuePair<T, T>(from, to));
+                }
+
+                components = new Dictionary<List<T>, KeyValuePair<T, T>>(componentsTemp);
+            }
+
+            return tree;
+        }
+
+        public Dictionary<T, double> Eccentricity()
+        {
+            Dictionary<T, double> eccentricity = new Dictionary<T, double>();
+
+            Dictionary<T, T> parents = new Dictionary<T, T>();
+            foreach (var v in _graph)
+            {
+                var max = Dijkstra(v.Key, out parents).OrderByDescending(pair => pair.Value).FirstOrDefault();
+                eccentricity.Add(v.Key, max.Value);
+            }
+
+            return eccentricity;
+        }
+
+        public Dictionary<T, double> Eccentricity(out Dictionary<T, Stack<T>> ways)
+        {
+            Dictionary<T, double> eccentricity = new Dictionary<T, double>();
+            ways = new Dictionary<T, Stack<T>>();
+
+            Dictionary<T, T> parents = new Dictionary<T, T>();
+            foreach (var v in _graph)
+            {
+                var max = Dijkstra(v.Key, out parents).OrderByDescending(pair => pair.Value).FirstOrDefault();
+                eccentricity.Add(v.Key, max.Value);
+
+                ways.Add(v.Key, GetWayTo(parents, max.Key));
+            }
+
+            return eccentricity;
+        }
+
+        public double Radius()
+        {
+            Dictionary<T, Stack<T>> ways;
+            return  Eccentricity().OrderBy(pair => pair.Value).FirstOrDefault().Value;
+        }
+
+        public double Diam()
+        {
+            return Eccentricity().OrderByDescending(pair => pair.Value).FirstOrDefault().Value;
+        }
+
+        public IEnumerable<T> Centr()
+        {
+            List<T> centr = new List<T>();
+
+            Dictionary<T, double> eccentricity = new Dictionary<T, double>();
+
+            foreach (var v in _graph)
+            {
+                var min = Dijkstra(v.Key).OrderByDescending(pair => pair.Value).FirstOrDefault();
+                eccentricity.Add(v.Key, min.Value);
+            }
+
+            var radius = Eccentricity().OrderBy(pair => pair.Value).FirstOrDefault().Value;
+
+            foreach (var v in eccentricity)
+            {
+                if (v.Value == radius)
+                {
+                    centr.Add(v.Key);
+                }
+            }
+
+            return centr;
+        }
+
         #endregion
 
         public void Show()
@@ -554,7 +659,14 @@ namespace Graph
                     Console.Write($"{vs.Key} | ");
                     foreach (var v in vs.Value)
                     {
-                        Console.Write($"{{{v.Key}, {v.Value}}} ");
+                        if (_weighted)
+                        {
+                            Console.Write($"{{{v.Key}, {v.Value}}} ");
+                        }
+                        else
+                        {
+                            Console.Write($"{{{v.Key}}} ");
+                        }
                     }
 
                     Console.WriteLine();

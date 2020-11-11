@@ -7,69 +7,37 @@ namespace SSU.Gadzhimuradov
 {
     static class Tasks
     {
-        static Graph<int> g = new Graph<int>("../../input.txt");
+        static Graph<int> g = new Graph<int>("../../input2.txt");
 
         public static void Test()
         {
-            var g1 = new Graph<int>(g);
+            Dictionary<int, Stack<int>> w;
+            g.Eccentricity(out w);
 
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("\nИзначальный граф:");
+            foreach (var item in w)
+            {
+                Console.Write($"{item.Key} ");
+
+                foreach (var u in item.Value)
+                {
+                    Console.Write($"{u} ");
+                }
+                Console.WriteLine();
+            }
+
+            Console.WriteLine();
+
+        }
+        public static void ShowGraph()
+        {
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine("Входной граф:");
             Console.ForegroundColor = ConsoleColor.Gray;
             g.Show();
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("\nГраф копия:");
-            Console.ForegroundColor = ConsoleColor.Gray;
-            g1.Show();
-
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine("\nДобавляем вершину 8.");
-            Console.ForegroundColor = ConsoleColor.Gray;
-            g1.AddVertex(8);
-
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("\nИзначальный граф:");
-            Console.ForegroundColor = ConsoleColor.Gray;
-            g.Show();
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("\nГраф копия:");
-            Console.ForegroundColor = ConsoleColor.Gray;
-            g1.Show();
-
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine("\nУдаляем вершину 1.");
-            Console.ForegroundColor = ConsoleColor.Gray;
-            g1.RemoveVertex(1);
-
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("\nИзначальный граф:");
-            Console.ForegroundColor = ConsoleColor.Gray;
-            g.Show();
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("\nГраф копия:");
-            Console.ForegroundColor = ConsoleColor.Gray;
-            g1.Show();
-
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine("\nДобавлем ребро 2 -> 8.");
-            Console.ForegroundColor = ConsoleColor.Gray;
-            g1.AddEdge(2, 8);
-
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("\nИзначальный граф:");
-            Console.ForegroundColor = ConsoleColor.Gray;
-            g.Show();
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("\nГраф копия:");
-            Console.ForegroundColor = ConsoleColor.Gray;
-            g1.Show();
-
         }
 
         public static void A1Ex16()
         {
-            g.Show();
-
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("\n№16. Введите веришины:");
             Console.ForegroundColor = ConsoleColor.Gray;
@@ -88,8 +56,6 @@ namespace SSU.Gadzhimuradov
 
         public static void A1Ex17()
         {
-            g.Show();
-
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("\n№17. Введите веришины:");
             Console.ForegroundColor = ConsoleColor.Gray;
@@ -135,8 +101,6 @@ namespace SSU.Gadzhimuradov
 
         public static void A2Ex22()
         {
-            g.Show();
-
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("\n№22.");
             Console.ForegroundColor = ConsoleColor.Gray;
@@ -156,13 +120,11 @@ namespace SSU.Gadzhimuradov
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.Write(r.Count);
             Console.ForegroundColor = ConsoleColor.Gray;
-            Console.Write($" вершин.\n{(r.Count <= 1 ? "Можно" : "Нельзя")} удалить одну вершину, чтобы получилось дерево.");
+            Console.Write($" вершин.\n{(r.Count <= 1 ? "Можно" : "Нельзя")} удалить одну вершину, чтобы получилось дерево.\n");
         }
 
         public static void A2Ex28()
         {
-            g.Show();
-
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("\n№28. Введитe веришину:");
             Console.ForegroundColor = ConsoleColor.Gray;
@@ -191,8 +153,6 @@ namespace SSU.Gadzhimuradov
 
         public static void A3Boruvka()
         {
-            g.Show();
-
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("\nАлгоритм Борувки.");
             Console.ForegroundColor = ConsoleColor.Gray;
@@ -204,6 +164,30 @@ namespace SSU.Gadzhimuradov
             Console.ForegroundColor = ConsoleColor.Gray;
 
             tree.Show();
+        }
+
+        public static void A4Ex11()
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("\n№11.");
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.Write("Радиус графа: ");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.Write(g.Radius());
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.Write("\nДиаметр графа: ");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine(g.Diam());
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.Write("Центральные вершины графа: ");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+
+            foreach (var c in g.Centr())
+            {
+                Console.Write($"{c} ");
+            }
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.WriteLine();
         }
     }
 }
