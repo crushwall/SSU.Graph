@@ -1,7 +1,9 @@
 ﻿using Graph;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace SSU.Gadzhimuradov
 {
@@ -11,29 +13,106 @@ namespace SSU.Gadzhimuradov
 
         public static void Test()
         {
-            Dictionary<int, Stack<int>> w;
-            g.Eccentricity(out w);
+            Graph<string> g1 = new Graph<string>("../../input3.txt");
+            g1.Show();
 
-            foreach (var item in w)
+            var bf = g1.FloydWarshall();
+            foreach (var v in bf)
             {
-                Console.Write($"{item.Key} ");
-
-                foreach (var u in item.Value)
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Write($"{v.Key}: ");
+                foreach (var u in v.Value)
                 {
-                    Console.Write($"{u} ");
+                    Console.Write($"{u.Key} ~ {u.Value}\t");
                 }
+
                 Console.WriteLine();
             }
 
             Console.WriteLine();
 
+
         }
-        public static void ShowGraph()
+
+        public static void Serialize()
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("\nПример сериализации:");
+            Console.ForegroundColor = ConsoleColor.Gray;
+
+            string json = JsonConvert.SerializeObject(g);
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.Write("\nJSON: ");
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.WriteLine(json);
+            using (StreamWriter writer = new StreamWriter("graph.json"))
+            {
+                writer.WriteLine(json);
+                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.WriteLine("\nГраф сериализован в файл: graph.json");
+                Console.ForegroundColor = ConsoleColor.Gray;
+            }
+
+            BinaryFormatter binary = new BinaryFormatter();
+
+            using (FileStream file = new FileStream("graph.bin", FileMode.OpenOrCreate))
+            {
+                binary.Serialize(file, g);
+                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.WriteLine("\nГраф сериализован в файл: graph.bin");
+                Console.ForegroundColor = ConsoleColor.Gray;
+            }
+
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("\nДесериализация:");
+            Console.ForegroundColor = ConsoleColor.Gray;
+            using (StreamReader reader = new StreamReader("graph.json"))
+            {
+                Graph<int> g1 = JsonConvert.DeserializeObject<Graph<int>>(reader.ReadToEnd());
+                g1.AddVertex(70);
+
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine("\nВходной граф:");
+                Console.ForegroundColor = ConsoleColor.Gray;
+                g.Show();
+
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine("\nДесиарилизованный граф с добавленной вершиной:");
+                Console.ForegroundColor = ConsoleColor.Gray;
+                g1.Show();
+            }
+
+            using (FileStream file = new FileStream("graph.bin", FileMode.OpenOrCreate))
+            {
+                Graph<int> g1 = (Graph<int>)binary.Deserialize(file);
+                g1.AddVertex(15);
+
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine("\nВходной граф:");
+                Console.ForegroundColor = ConsoleColor.Gray;
+                g.Show();
+
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine("\nДесиарилизованный граф с добавленной вершиной:");
+                Console.ForegroundColor = ConsoleColor.Gray;
+                g1.Show();
+            }
+        }
+
+        public static void ShowGraph(string title)
         {
             Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine("Входной граф:");
+            Console.WriteLine(title);
             Console.ForegroundColor = ConsoleColor.Gray;
             g.Show();
+        }
+
+        public static void ShowGraph<T> (string title, Graph<T> graph) where T : IEquatable<T>, IComparable<T>
+        {
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine(title);
+            Console.ForegroundColor = ConsoleColor.Gray;
+            graph.Show();
         }
 
         public static void A1Ex16()
@@ -188,6 +267,118 @@ namespace SSU.Gadzhimuradov
             }
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine();
+        }
+
+        public static void B4Ex14()
+        {
+            Graph<string> g1 = new Graph<string>("../../input3.txt");
+
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("\n№14.");
+            ShowGraph<string>("Входной граф", g1);
+
+            Dictionary<string, string> parents;
+            Stack<string> cycle;
+            var bf = g1.BellmanFord("a", out parents, out cycle);
+
+            if (bf.Count > 0)
+            {
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine("\nКратчайшие пути из a:");
+                Console.ForegroundColor = ConsoleColor.Gray;
+
+                foreach (var way in Graph<string>.GetWaysToAll(parents))
+                {
+                    Console.Write("Путь до ");
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                    Console.Write(way.Key);
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                    Console.Write(": ");
+
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    foreach (var w in way.Value)
+                    {
+                        Console.Write($"{w} ");
+                    }
+                    Console.ForegroundColor = ConsoleColor.Gray;
+
+                    Console.Write("Вес пути: ");
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.WriteLine($"{bf[way.Key]}");
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                }
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Write("\nГраф содержит отрицательный цикл: ");
+                Console.ForegroundColor = ConsoleColor.Gray;
+
+                foreach (var c in cycle)
+                {
+                    Console.Write($"{c} ");
+                }
+            }
+        }
+
+        public static void C4Ex17()
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("\n№17.");
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine("Kратчайшие пути для всех пар вершин:");
+            Console.ForegroundColor = ConsoleColor.Gray;
+
+            var parents = new Dictionary<int, Dictionary<int, int>>();
+            var fw = g.FloydWarshall(out parents);
+
+            if (fw.Count > 0)
+            {
+                foreach (var p in parents)
+                {
+                    Console.Write("\nПуть до всех вершин от вершины ");
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.Write($"{p.Key}");
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                    Console.WriteLine($": ");
+
+                    foreach (var way in Graph<int>.GetWaysToAll(p.Value))
+                    {
+                        Console.Write("\tПуть до ");
+                        Console.ForegroundColor = ConsoleColor.Blue;
+                        Console.Write(way.Key);
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                        Console.Write(": ");
+
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        foreach (var w in way.Value)
+                        {
+                            Console.Write($"{w} ");
+                        }
+                        Console.ForegroundColor = ConsoleColor.Gray;
+
+                        Console.Write("Вес пути: ");
+                        Console.ForegroundColor = ConsoleColor.Cyan;
+                        Console.WriteLine($"{fw[p.Key][way.Key]}");
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                    }
+                }
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("\nГраф содержит отрицательный цикл.");
+                Console.ForegroundColor = ConsoleColor.Gray;
+            }
+        }
+
+        public static void MaximumFlow()
+        {
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.Write("\nМаксимальный поток графа = ");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write(g.Dinic(1, 5));
+            Console.ForegroundColor = ConsoleColor.Gray;
         }
     }
 }

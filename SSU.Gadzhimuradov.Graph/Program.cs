@@ -10,7 +10,7 @@ namespace SSU.Gadzhimuradov.Graph
     {
         static void Main(string[] args)
         {
-            Tasks.ShowGraph();
+            Tasks.ShowGraph("Входной граф");
 
             //Tasks.Test();
 
@@ -23,7 +23,11 @@ namespace SSU.Gadzhimuradov.Graph
 
             //Tasks.A3Boruvka();
 
-            Tasks.A4Ex11();
+            //Tasks.A4Ex11();
+            //Tasks.B4Ex14();
+            //Tasks.C4Ex17();
+
+            Tasks.MaximumFlow();
 
             Console.ReadKey(true);
         }

@@ -8,6 +8,7 @@ using System.Runtime.Serialization;
 
 namespace Graph
 {
+    [Serializable]
     public class Graph<T> : ISerializable where T : IEquatable<T>, IComparable<T>
     {
         #region FIELDS
@@ -33,6 +34,11 @@ namespace Graph
             get { return _weighted; }
 
             set { _weighted = value; }
+        }
+
+        public Dictionary<T, Dictionary<T, double>> GraphCollection
+        {
+            get { return _graph; }
         }
 
         #endregion
@@ -150,7 +156,7 @@ namespace Graph
         {
             _directed = (bool)info.GetValue("Directed", typeof(bool));
             _weighted = (bool)info.GetValue("Weighted", typeof(bool));
-            _graph = (Dictionary<T, Dictionary<T, double>>)info.GetValue("Graph", typeof(Dictionary<T, Dictionary<T, double>>));
+            _graph = (Dictionary<T, Dictionary<T, double>>)info.GetValue("GraphCollection", typeof(Dictionary<T, Dictionary<T, double>>));
         }
 
         #endregion
@@ -423,6 +429,20 @@ namespace Graph
             return false;
         }
 
+        private bool ContainsNegativeWeights()
+        {
+            foreach (var v in _graph)
+            {
+                var temp = v.Value.Where(pair => pair.Value < 0).ToList();
+                if (temp.Count > 0)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public Dictionary<T, double> Dijkstra(T v)
         {
             Dictionary<T, T> parents;
@@ -432,6 +452,11 @@ namespace Graph
 
         public Dictionary<T, double> Dijkstra(T v, out Dictionary<T, T> parents)
         {
+            if (ContainsNegativeWeights())
+            {
+                return BellmanFord(v, out parents);
+            }
+
             Dictionary<T, double> d = new Dictionary<T, double>(_graph.Count);
             parents = new Dictionary<T, T>();
 
@@ -442,7 +467,7 @@ namespace Graph
             T tempV = v;
             d.Add(v, 0);
             set.Add(new KeyValuePair<double, T>(0, v));
-            parents[v] = v;
+            parents.Add(v, v);
 
             while (set.Count != 0)
             {
@@ -466,6 +491,198 @@ namespace Graph
                         d.Add(u.Key, d[tempV] + u.Value);
                         parents.Add(u.Key, tempV);
                         set.Add(new KeyValuePair<double, T>(d[u.Key], u.Key));
+                    }
+                }
+            }
+
+            return d;
+        }
+
+        public Dictionary<T, double> BellmanFord(T v)
+        {
+            Dictionary<T, T> parents;
+            Stack<T> cycle;
+
+            return BellmanFord(v, out parents, out cycle);
+        }
+
+        public Dictionary<T, double> BellmanFord(T v, out Dictionary<T, T> parents)
+        {
+            Stack<T> cycle;
+
+            return BellmanFord(v, out parents, out cycle);
+        }
+
+        public Dictionary<T, double> BellmanFord(T v, out Stack<T> cycle)
+        {
+            Dictionary<T, T> parents;
+
+            return BellmanFord(v, out parents, out cycle);
+        }
+
+        public Dictionary<T, double> BellmanFord(T v, out Dictionary<T, T> parents, out Stack<T> cycle)
+        {
+            Dictionary<T, double> d = new Dictionary<T, double>(_graph.Count);
+            parents = new Dictionary<T, T>();
+            cycle = new Stack<T>();
+
+            d.Add(v, 0);
+            parents.Add(v, v);
+
+            bool cycleFlag = false;
+            T c = default(T);
+            for (int i = 0; i < _graph.Count; i++)
+            {
+                cycleFlag = false;
+                foreach (var u in _graph)
+                {
+                    if (!d.ContainsKey(u.Key))
+                    {
+                        d.Add(u.Key, double.MaxValue);
+                    }
+
+                    foreach (var adj in u.Value)
+                    {
+                        if (d.ContainsKey(adj.Key) && (d[adj.Key] > d[u.Key] + adj.Value))
+                        {
+                            d[adj.Key] = d[u.Key] + adj.Value;
+                            parents[adj.Key] = u.Key;
+                            cycleFlag = true;
+                            c = adj.Key;
+                        }
+                        else if (!d.ContainsKey(adj.Key))
+                        {
+                            d.Add(adj.Key, d[u.Key] + adj.Value);
+                            parents.Add(adj.Key, u.Key);
+                            c = adj.Key;
+                        }
+                    }
+                }
+            }
+
+            if (cycleFlag)
+            {
+                for (int i = 0; i < _graph.Count; i++)
+                {
+                    c = parents[c];
+                }
+
+                cycle.Push(c);
+                T y = parents[c];
+                while (!y.Equals(c))
+                {
+                    cycle.Push(y);
+                    y = parents[y];
+                }
+
+                d.Clear();
+                parents.Clear();
+            }
+            
+            return d;
+        }
+
+        public Dictionary<T, Dictionary<T, double>> FloydWarshall()
+        {
+            Dictionary<T, Dictionary<T, T>> parents;
+
+            return FloydWarshall(out parents);
+        }
+
+        public Dictionary<T, Dictionary<T, double>> FloydWarshall(out Dictionary<T, Dictionary<T,T>> parents)
+        {
+            Dictionary<T, Dictionary<T, double>> d = new Dictionary<T, Dictionary<T, double>>();
+            parents = new Dictionary<T, Dictionary<T, T>>();
+
+            if (ContainsNegativeWeights())
+            {
+                return d;
+            }
+
+            Dictionary<T, uint> vertexEnum = new Dictionary<T, uint>(_graph.Count);
+            double[,] matrix = new double[_graph.Count, _graph.Count];
+            for (int i = 0; i < matrix.GetLength(0); i++)
+            {
+                for (int j = 0; j < matrix.GetLength(0); j++)
+                {
+                    matrix[i, j] = double.MaxValue;
+                }
+            }
+
+            foreach (var v in _graph)
+            {
+                if (!vertexEnum.ContainsKey(v.Key))
+                {
+                    vertexEnum.Add(v.Key, (uint)vertexEnum.Count);
+                }
+
+                matrix[vertexEnum[v.Key], vertexEnum[v.Key]] = 0;
+                foreach (var adj in v.Value)
+                {
+                    if (!vertexEnum.ContainsKey(adj.Key))
+                    {
+                        vertexEnum.Add(adj.Key, (uint)vertexEnum.Count);
+                    }
+
+                    matrix[vertexEnum[v.Key], vertexEnum[adj.Key]] = adj.Value;
+
+                    if (!parents.ContainsKey(v.Key))
+                    {
+                        Dictionary<T, T> temp = new Dictionary<T, T>();
+                        temp.Add(v.Key, v.Key);
+                        temp.Add(adj.Key, v.Key);
+                        parents.Add(v.Key, temp);
+
+                        Dictionary<T, double> tempD = new Dictionary<T, double>();
+                        tempD.Add(v.Key, 0);
+                        tempD.Add(adj.Key, adj.Value);
+                        d.Add(v.Key, tempD);
+                    }
+                    else
+                    {
+                        parents[v.Key].Add(adj.Key, v.Key);
+
+                        d[v.Key].Add(adj.Key, adj.Value);
+                    }
+                }
+            }
+
+            for (int k = 0; k < matrix.GetLength(0); k++)
+            {
+                for (int i = 0; i < matrix.GetLength(0); i++)
+                {
+                    for (int j = 0; j < matrix.GetLength(0); j++)
+                    {
+                        if (matrix[i, k] < double.MaxValue && matrix[k, j] < double.MaxValue
+                            && matrix[i, j] > matrix[i, k] + matrix[k, j])
+                        {
+                            matrix[i, j] = matrix[i, k] + matrix[k, j];
+
+                            if (!parents.ContainsKey(vertexEnum.ElementAt(i).Key))
+                            {
+                                parents.Add(vertexEnum.ElementAt(i).Key, new Dictionary<T, T>());
+
+                                d.Add(vertexEnum.ElementAt(i).Key, new Dictionary<T, double>());
+                                d[vertexEnum.ElementAt(i).Key].Add(vertexEnum.ElementAt(j).Key, matrix[i, j]);
+                            }
+                            else
+                            {
+                                if (!parents[vertexEnum.ElementAt(i).Key].ContainsKey(vertexEnum.ElementAt(j).Key))
+                                {
+                                    parents[vertexEnum.ElementAt(i).Key].Add(vertexEnum.ElementAt(j).Key, vertexEnum.ElementAt(k).Key);
+
+                                    d[vertexEnum.ElementAt(i).Key].Add(vertexEnum.ElementAt(j).Key, matrix[i, j]);
+
+                                }
+                                else
+                                {
+                                    parents[vertexEnum.ElementAt(i).Key][vertexEnum.ElementAt(j).Key] = vertexEnum.ElementAt(k).Key;
+
+                                    d[vertexEnum.ElementAt(i).Key][vertexEnum.ElementAt(j).Key] = matrix[i, j];
+
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -646,6 +863,23 @@ namespace Graph
             return centr;
         }
 
+        public int MaximumFlow(T source, T sink)
+        {
+           return  Dinic(source, sink);
+        }
+
+        public int Dinic(T source, T sink)
+        {
+            int maxFlow = 0;
+
+            Dictionary<T, int> flow = new Dictionary<T, int>();
+
+
+
+            return maxFlow;
+
+        }
+
         #endregion
 
         public void Show()
@@ -743,7 +977,7 @@ namespace Graph
         {
             info.AddValue("Directed", _directed, typeof(bool));
             info.AddValue("Weighted", _weighted, typeof(bool));
-            info.AddValue("Graph", _graph, typeof(Dictionary<T, Dictionary<T, double>>));
+            info.AddValue("GraphCollection", _graph, typeof(Dictionary<T, Dictionary<T, double>>));
         }
 
         #endregion
