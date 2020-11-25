@@ -863,21 +863,175 @@ namespace Graph
             return centr;
         }
 
-        public int MaximumFlow(T source, T sink)
+        private void FindBridgesDFS(T v, T u, int timer,
+            ref Dictionary<T, bool> used, ref Dictionary<T, int> tin, ref Dictionary<T, int> fup, ref List<KeyValuePair<T, T>> bridges)
         {
-           return  Dinic(source, sink);
+            used[v] = true;
+
+            timer++;
+            tin[v] = timer;
+            fup[v] = timer;
+
+            foreach (var adj in _graph[v])
+            {
+                var to = adj.Key;
+                if (to.Equals(u))
+                {
+                    continue;
+                }
+
+                if (used[to])
+                {
+                    fup[v] = Math.Min(fup[v], tin[to]);
+                }
+                else
+                {
+                    FindBridgesDFS(to, v, timer, ref used, ref tin, ref fup, ref bridges);
+
+                    fup[v] = Math.Min(fup[v], fup[to]);
+                    if (fup[to] > tin[v])
+                    {
+                        bridges.Add(new KeyValuePair<T, T>(v, to));
+                    }
+                }
+            }
         }
 
-        public int Dinic(T source, T sink)
+        public List<KeyValuePair<T, T>> FindBridges()
         {
-            int maxFlow = 0;
+            List<KeyValuePair<T, T>> bridges = new List<KeyValuePair<T, T>>();
+            Dictionary<T, bool> used = new Dictionary<T, bool>();
+            Dictionary<T, int> tin = new Dictionary<T, int>();
+            Dictionary<T, int> fup = new Dictionary<T, int>();
 
-            Dictionary<T, int> flow = new Dictionary<T, int>();
+            int timer = 0;
+            foreach (var v in _graph)
+            {
+                used[v.Key] = false;
+            }
 
+            foreach (var v in _graph)
+            {
+                if (!used[v.Key])
+                    FindBridgesDFS(v.Key, v.Key, timer, ref used, ref tin, ref fup, ref bridges);
+            }
 
+            return bridges;
+        }
+
+        public double MaximumFlow(T source, T sink)
+        {
+            Dictionary<T, Dictionary<T, double>> flowGraph;
+            return Dinic(source, sink, out flowGraph);
+        }
+
+        public double MaximumFlow(T source, T sink, out Dictionary<T, Dictionary<T, double>> flowGraph)
+        {
+            return Dinic(source, sink, out flowGraph);
+        }
+
+        public double Dinic(T source, T sink)
+        {
+            Dictionary<T, Dictionary<T, double>> flowGraph;
+            return Dinic(source, sink, out flowGraph);
+        }
+
+        private bool DinicBFS(T source, T sink,
+            ref Dictionary<T, int> levels, ref Dictionary<T, Dictionary<T, double>> flowGraph)
+        {
+            levels.Clear();
+            Queue<T> queue = new Queue<T>();
+
+            T temp = source;
+            levels.Add(source, 0);
+            queue.Enqueue(source);
+
+            while (queue.Count != 0)
+            {
+                temp = queue.Dequeue();
+
+                foreach (var u in _graph[temp])
+                {
+                    if (!levels.ContainsKey(u.Key) && flowGraph[temp][u.Key] < _graph[temp][u.Key])
+                    {
+                        queue.Enqueue(u.Key);
+                        levels.Add(u.Key, levels[temp] + 1);
+                    }
+                }
+            }
+
+            return levels.ContainsKey(sink);
+        }
+
+        private double DinicDFS(T sourse, T sink, double flow, ref Dictionary<T, int> ptr,
+            ref Dictionary<T, int> levels, ref Dictionary<T, Dictionary<T, double>> flowGraph)
+        {
+            if (sourse.Equals(sink))
+            {
+                return flow;
+            }
+
+            T temp = sourse;
+            foreach (var adj in _graph[temp])
+            {
+                if (!ptr.ContainsKey(temp))
+                {
+                    ptr.Add(temp, 0);
+                }
+                ptr[temp]++;
+
+                if (levels[adj.Key] == levels[temp] + 1
+                    && flowGraph[temp][adj.Key] < _graph[temp][adj.Key])
+                {
+                    double currFlow = Math.Min(flow, _graph[temp][adj.Key] - flowGraph[temp][adj.Key]);
+
+                    double tempFlow = DinicDFS(adj.Key, sink, currFlow, ref ptr, ref levels, ref flowGraph);
+
+                    if (tempFlow > 0)
+                    {
+                        flowGraph[temp][adj.Key] += tempFlow;
+                        //flowGraph[adj.Key][temp] -= tempFlow;
+                        return tempFlow;
+                    }
+                }
+            }
+
+            return 0;
+        }
+
+        public double Dinic(T source, T sink, out Dictionary<T, Dictionary<T, double>> flowGraph)
+        {
+            flowGraph = new Dictionary<T, Dictionary<T, double>>();
+            foreach (var v in _graph)
+            {
+                var tempAdj = new Dictionary<T, double>();
+                foreach (var adj in v.Value)
+                {
+                    tempAdj.Add(adj.Key, 0);
+                }
+
+                flowGraph.Add(v.Key, tempAdj);
+            }
+
+            double maxFlow = 0;
+            var levels = new Dictionary<T, int>();
+            var ptr = new Dictionary<T, int>();
+            foreach (var v in _graph)
+            {
+                ptr.Add(v.Key, 0);
+            }
+
+            while (DinicBFS(source, sink, ref levels, ref flowGraph))
+            {
+                double pushed = DinicDFS(source, sink, double.MaxValue, ref ptr, ref levels, ref flowGraph);
+                while (pushed > 0)
+                {
+                    maxFlow += pushed;
+                    pushed = DinicDFS(source, sink, double.MaxValue, ref ptr, ref levels, ref flowGraph);
+                }
+            }
 
             return maxFlow;
-
         }
 
         #endregion

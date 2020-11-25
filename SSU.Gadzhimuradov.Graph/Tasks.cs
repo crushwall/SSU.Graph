@@ -13,25 +13,12 @@ namespace SSU.Gadzhimuradov
 
         public static void Test()
         {
-            Graph<string> g1 = new Graph<string>("../../input3.txt");
-            g1.Show();
-
-            var bf = g1.FloydWarshall();
-            foreach (var v in bf)
+            foreach (var b in g.FindBridges())
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.Write($"{v.Key}: ");
-                foreach (var u in v.Value)
-                {
-                    Console.Write($"{u.Key} ~ {u.Value}\t");
-                }
-
-                Console.WriteLine();
+                Console.WriteLine($"{b.Key} {b.Value}");
             }
 
             Console.WriteLine();
-
-
         }
 
         public static void Serialize()
@@ -374,10 +361,56 @@ namespace SSU.Gadzhimuradov
 
         public static void MaximumFlow()
         {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("\nПоиск максимального потока.");
+            Console.ForegroundColor = ConsoleColor.Gray;
+
+            Console.Write("Введите исток и сток: ");
+            string[] temp = Console.ReadLine().Split(' ');
+            int source = int.Parse(temp[0]);
+            int sink = int.Parse(temp[1]);
+
+            Dictionary<int, Dictionary<int, double>> flowGraph;
+            double f = g.Dinic(source, sink, out flowGraph);
+
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine("\nГраф с потоками:");
+            Console.ForegroundColor = ConsoleColor.Gray;
+            foreach (var v in flowGraph)
+            {
+                Console.Write($"{v.Key} | ");
+                foreach (var u in v.Value)
+                {
+                    Console.Write($"{{{u.Key}, ");
+                    Console.ForegroundColor = ConsoleColor.Blue;
+
+                    if (u.Value == g.GraphCollection[v.Key][u.Key])
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                    }
+
+                    Console.Write(u.Value);
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                    Console.Write(" / ");
+                    Console.ForegroundColor = ConsoleColor.Green;
+
+                    if (u.Value == g.GraphCollection[v.Key][u.Key])
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                    }
+
+                    Console.Write(g.GraphCollection[v.Key][u.Key]);
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                    Console.Write("} ");
+                }
+
+                Console.WriteLine();
+            }
+
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.Write("\nМаксимальный поток графа = ");
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write(g.Dinic(1, 5));
+            Console.Write(f);
             Console.ForegroundColor = ConsoleColor.Gray;
         }
     }

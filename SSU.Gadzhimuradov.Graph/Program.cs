@@ -12,7 +12,7 @@ namespace SSU.Gadzhimuradov.Graph
         {
             Tasks.ShowGraph("Входной граф");
 
-            //Tasks.Test();
+            //.Test();
 
             //Tasks.A1Ex16();
             //Tasks.A1Ex17();
