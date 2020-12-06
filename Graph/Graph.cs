@@ -391,6 +391,95 @@ namespace Graph
             return d;
         }
 
+        public Dictionary<T, int> DFS(T v)
+        {
+            Dictionary<T, T> parents;
+            Dictionary<T, List<T>> treeDFS;
+
+            return DFS(v, out parents, out treeDFS);
+        }
+
+        public Dictionary<T, int> DFS(T v, out Dictionary<T, T> parents)
+        {
+            Dictionary<T, List<T>> treeDFS;
+
+            return DFS(v, out parents, out treeDFS);
+        }
+
+        public Dictionary<T, int> DFS(T v, out Dictionary<T, List<T>> treeDFS)
+        {
+            Dictionary<T, T> parents;
+
+            return DFS(v, out parents, out treeDFS);
+        }
+
+        public Dictionary<T, int> DFS(T v, out Dictionary<T, T> parents, out Dictionary<T, List<T>> treeDFS)
+        {
+            Dictionary<T, int> d = new Dictionary<T, int>(_graph.Count);
+            parents = new Dictionary<T, T>();
+            treeDFS = new Dictionary<T, List<T>>();
+
+            Stack<T> stack = new Stack<T>();
+            int step = 0;
+
+            T tempV = v;
+            stack.Push(v);
+            parents[v] = v;
+
+            while (d.Count < _graph.Count)
+            {
+                while (stack.Count != 0)
+                {
+                    if (!d.ContainsKey(stack.Peek()))
+                    {
+                        if (_graph[tempV].ContainsKey(stack.Peek()))
+                        {
+                            parents[stack.Peek()] = tempV;
+                        }
+
+                        if (!stack.Peek().Equals(tempV))
+                        {
+                            treeDFS[parents[stack.Peek()]].Add(stack.Peek());
+                        }
+
+                        tempV = stack.Pop();
+                        d.Add(tempV, step);
+                        treeDFS.Add(tempV, new List<T>());
+
+                        foreach (var u in _graph[tempV].OrderByDescending(pair => pair.Key))
+                        {
+                            if (!d.ContainsKey(u.Key))
+                            {
+                                stack.Push(u.Key);
+                            }
+
+                            if (!parents.ContainsKey(u.Key))
+                            {
+                                parents.Add(u.Key, tempV);
+                            }
+                        }
+
+                        step++;
+                    }
+                    else
+                    {
+                        stack.Pop();
+                    }
+                }
+
+                if (d.Count < _graph.Count)
+                {
+                    tempV = _graph.Where(pair => !d.ContainsKey(pair.Key)).First().Key;
+                    stack.Push(tempV);
+                    parents[tempV] = tempV;
+                    step = 0;
+
+                }
+            }
+
+            return d;
+        }
+
         public bool IsCyclic()
         {
             T cycle;
@@ -863,7 +952,12 @@ namespace Graph
             return centr;
         }
 
-        private void FindBridgesDFS(T v, T u, int timer,
+        public List<KeyValuePair<T, T>> FindBridges()
+        {
+            return Tarjan();
+        }
+
+        private void TarjanDFS(T v, T u, int timer,
             ref Dictionary<T, bool> used, ref Dictionary<T, int> tin, ref Dictionary<T, int> fup, ref List<KeyValuePair<T, T>> bridges)
         {
             used[v] = true;
@@ -886,7 +980,7 @@ namespace Graph
                 }
                 else
                 {
-                    FindBridgesDFS(to, v, timer, ref used, ref tin, ref fup, ref bridges);
+                    TarjanDFS(to, v, timer, ref used, ref tin, ref fup, ref bridges);
 
                     fup[v] = Math.Min(fup[v], fup[to]);
                     if (fup[to] > tin[v])
@@ -897,9 +991,10 @@ namespace Graph
             }
         }
 
-        public List<KeyValuePair<T, T>> FindBridges()
+        public List<KeyValuePair<T, T>> Tarjan()
         {
             List<KeyValuePair<T, T>> bridges = new List<KeyValuePair<T, T>>();
+
             Dictionary<T, bool> used = new Dictionary<T, bool>();
             Dictionary<T, int> tin = new Dictionary<T, int>();
             Dictionary<T, int> fup = new Dictionary<T, int>();
@@ -913,7 +1008,73 @@ namespace Graph
             foreach (var v in _graph)
             {
                 if (!used[v.Key])
-                    FindBridgesDFS(v.Key, v.Key, timer, ref used, ref tin, ref fup, ref bridges);
+                    TarjanDFS(v.Key, v.Key, timer, ref used, ref tin, ref fup, ref bridges);
+            }
+
+            return bridges;
+        }
+
+        public List<Queue<T>> ChainDecomposition()
+        {
+            List<Queue<T>> chains = new List<Queue<T>>();
+
+            Dictionary<T, T> parents;
+            Dictionary<T, List<T>> treeDFS;
+            Dictionary<T, int> dfs = DFS(_graph.First().Key, out parents, out treeDFS);
+
+            foreach (var v in _graph)
+            {
+                var g = v.Value.Where(pair => !treeDFS[v.Key].Contains(pair.Key)
+                && !treeDFS[pair.Key].Contains(v.Key));
+                foreach (var adj in g)
+                {
+                    var chain = new Queue<T>();
+                    chain.Enqueue(v.Key);
+
+                    T temp = adj.Key;
+                    while (!temp.Equals(v.Key) && dfs[parents[temp]] < dfs[temp])
+                    {
+                        chain.Enqueue(temp);
+                        temp = parents[temp];
+                    }
+                    chain.Enqueue(temp);
+
+                    if (chain.Count > 1)
+                    {
+                        chains.Add(chain);
+                    }
+                }
+            }
+
+             return chains;
+        }
+
+        public List<KeyValuePair<T, T>> FindBridgesByChains()
+        {
+            List<KeyValuePair<T, T>> bridges = new List<KeyValuePair<T, T>>();
+
+            var decompositions = ChainDecomposition();
+
+            foreach (var v in _graph)
+            {
+                foreach (var adj in v.Value)
+                {
+                    if (_directed)
+                    {
+                        if (!decompositions.Any(l => l.Contains(adj.Key)))
+                        {
+                            bridges.Add(new KeyValuePair<T, T>(v.Key, adj.Key));
+                        }
+                    }
+                    else
+                    {
+                        if (!decompositions.Any(l => l.Contains(adj.Key))
+                            && !bridges.Contains(new KeyValuePair<T, T>(adj.Key, v.Key)))
+                        {
+                            bridges.Add(new KeyValuePair<T, T>(v.Key, adj.Key));
+                        }
+                    }
+                }
             }
 
             return bridges;
@@ -990,7 +1151,6 @@ namespace Graph
                     if (tempFlow > 0)
                     {
                         flowGraph[temp][adj.Key] += tempFlow;
-                        //flowGraph[adj.Key][temp] -= tempFlow;
                         return tempFlow;
                     }
                 }

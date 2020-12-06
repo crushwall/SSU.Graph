@@ -1,25 +1,16 @@
 ﻿using Graph;
-using Newtonsoft.Json;
+using Visualization;
 using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Collections.Generic;
 using System.Runtime.Serialization.Formatters.Binary;
+using Newtonsoft.Json;
 
 namespace SSU.Gadzhimuradov
 {
     static class Tasks
     {
-        static Graph<int> g = new Graph<int>("../../input2.txt");
-
-        public static void Test()
-        {
-            foreach (var b in g.FindBridges())
-            {
-                Console.WriteLine($"{b.Key} {b.Value}");
-            }
-
-            Console.WriteLine();
-        }
+        static Graph<int> g = new Graph<int>("../../input4.txt");
 
         public static void Serialize()
         {

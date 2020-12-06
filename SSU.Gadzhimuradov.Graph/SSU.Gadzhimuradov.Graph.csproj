@@ -59,6 +59,10 @@
       <Project>{BD5355BD-5922-4A35-91C3-6FFFC56FAC54}</Project>
       <Name>Graph</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Visualization\Visualization.csproj">
+      <Project>{ce1cedf9-233c-4797-93bf-16eb939e6d22}</Project>
+      <Name>Visualization</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="input.txt" />

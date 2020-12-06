@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SSU.Gadzhimuradov.Graph
 {
@@ -12,24 +8,23 @@ namespace SSU.Gadzhimuradov.Graph
         {
             Tasks.ShowGraph("Входной граф");
 
-            //.Test();
+            Tasks.A1Ex16();
+            Tasks.A1Ex17();
+            Tasks.B1Ex10();
 
-            //Tasks.A1Ex16();
-            //Tasks.A1Ex17();
-            //Tasks.B1Ex10();
+            Tasks.A2Ex22();
+            Tasks.A2Ex28();
 
-            //Tasks.A2Ex22();
-            //Tasks.A2Ex28();
+            Tasks.A3Boruvka();
 
-            //Tasks.A3Boruvka();
-
-            //Tasks.A4Ex11();
-            //Tasks.B4Ex14();
-            //Tasks.C4Ex17();
+            Tasks.A4Ex11();
+            Tasks.B4Ex14();
+            Tasks.C4Ex17();
 
             Tasks.MaximumFlow();
 
             Console.ReadKey(true);
+            while (Console.ReadKey().Key != ConsoleKey.Q) { }
         }
     }
 }

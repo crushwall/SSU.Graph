@@ -8,9 +8,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Graph", "Graph\Graph.csproj", "{BD5355BD-5922-4A35-91C3-6FFFC56FAC54}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2C64234A-0733-4FC7-912E-D24356B04869}"
-	ProjectSection(SolutionItems) = preProject
-		README.md = README.md
-	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Visualization", "Visualization\Visualization.csproj", "{CE1CEDF9-233C-4797-93BF-16EB939E6D22}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,6 +25,10 @@ Global
 		{BD5355BD-5922-4A35-91C3-6FFFC56FAC54}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BD5355BD-5922-4A35-91C3-6FFFC56FAC54}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BD5355BD-5922-4A35-91C3-6FFFC56FAC54}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE1CEDF9-233C-4797-93BF-16EB939E6D22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE1CEDF9-233C-4797-93BF-16EB939E6D22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE1CEDF9-233C-4797-93BF-16EB939E6D22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE1CEDF9-233C-4797-93BF-16EB939E6D22}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
