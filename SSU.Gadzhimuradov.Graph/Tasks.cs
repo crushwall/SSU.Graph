@@ -10,7 +10,7 @@ namespace SSU.Gadzhimuradov
 {
     static class Tasks
     {
-        static Graph<int> g = new Graph<int>("../../input4.txt");
+        static Graph<int> g = new Graph<int>();
 
         public static void Serialize()
         {
@@ -403,6 +403,33 @@ namespace SSU.Gadzhimuradov
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write(f);
             Console.ForegroundColor = ConsoleColor.Gray;
+        }
+
+        public static void Bridges()
+        {
+            for (int i = 1; i<= 6; i++)
+            {
+                g = new Graph<int>($"../../input{i}.txt");
+                ShowGraph($"№{i}");
+
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("\n\tАлгоритм Тарьяна:");
+                Console.ForegroundColor = ConsoleColor.Gray;
+
+                foreach (var b in g.Tarjan())
+                {
+                    Console.WriteLine($"\t{b.Key} -> {b.Value}");
+                }
+
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("\n\tАлгоритм цепочной декомпозиции:");
+                Console.ForegroundColor = ConsoleColor.Gray;
+
+                foreach (var b in g.FindBridgesByChains())
+                {
+                    Console.WriteLine($"\t{b.Key} -> {b.Value}");
+                }
+            }
         }
     }
 }

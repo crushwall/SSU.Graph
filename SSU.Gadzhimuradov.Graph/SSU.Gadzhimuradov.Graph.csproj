@@ -52,6 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <Content Include="input6.txt" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -65,11 +66,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="input.txt" />
     <Content Include="input1.txt" />
     <Content Include="input2.txt" />
     <Content Include="input3.txt" />
     <Content Include="input4.txt" />
+    <Content Include="input5.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

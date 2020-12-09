@@ -448,9 +448,22 @@ namespace Graph
 
                         foreach (var u in _graph[tempV].OrderByDescending(pair => pair.Key))
                         {
+
                             if (!d.ContainsKey(u.Key))
                             {
                                 stack.Push(u.Key);
+                            }
+                            else if (_directed && treeDFS[tempV].Count == 0
+                                && parents[tempV].Equals(tempV))
+                            {
+                                if (_graph[tempV].Count == 1)
+                                {
+                                    treeDFS[tempV].Add(u.Key);
+                                }
+                                else if (!d.ContainsKey(u.Key))
+                                {
+                                    treeDFS[tempV].Add(u.Key);
+                                }
                             }
 
                             if (!parents.ContainsKey(u.Key))
@@ -469,7 +482,7 @@ namespace Graph
 
                 if (d.Count < _graph.Count)
                 {
-                    tempV = _graph.Where(pair => !d.ContainsKey(pair.Key)).First().Key;
+                    tempV = _graph.Where(pair => !d.ContainsKey(pair.Key)).OrderByDescending(pair => pair.Value.Count).First().Key;
                     stack.Push(tempV);
                     parents[tempV] = tempV;
                     step = 0;
