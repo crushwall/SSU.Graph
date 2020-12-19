@@ -22,6 +22,8 @@ namespace Visualization
         public EdgeWeightWindow()
         {
             InitializeComponent();
+
+            weightBox.Focus();
         }
         private void Accept_Click(object sender, RoutedEventArgs e)
         {
@@ -30,7 +32,17 @@ namespace Visualization
 
         public double Weight
         {
-            get { return double.Parse(weightBox.Text); }
+            get
+            {
+                if (weightBox.Text != null)
+                {
+                    return double.Parse(weightBox.Text);
+                }
+                else
+                {
+                    return 0;
+                }
+            }
         }
     }
 }

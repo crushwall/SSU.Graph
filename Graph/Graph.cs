@@ -223,28 +223,23 @@ namespace Graph
             }
         }
 
-        public void AddEdge()
-        {
-            Console.WriteLine("Введите номер вершин и вес ребра, при необходимости\nФормат\n\tвершина вершина вес");
-
-            string[] temp = Console.ReadLine().Split(' ');
-
-            double weight = (temp.Length == 3) ? double.Parse(temp[2]) : 1;
-
-            _graph[ConvertFromString(temp[0])].Add(ConvertFromString(temp[1]), weight);
-            _graph[ConvertFromString(temp[1])].Add(ConvertFromString(temp[0]), weight);
-        }
-
         public void AddEdge(T startVertex, T endVertex)
         {
             _graph[startVertex].Add(endVertex, 1);
-            _graph[endVertex].Add(startVertex, 1);
+
+            if (!_directed)
+            {
+                _graph[endVertex].Add(startVertex, 1);
+            }
         }
 
         public void AddEdge(T startVertex, T endVertex, double weight)
         {
             _graph[startVertex].Add(endVertex, weight);
-            _graph[endVertex].Add(startVertex, weight);
+            if (!_directed)
+            {
+                _graph[endVertex].Add(startVertex, weight);
+            }
         }
 
         public void RemoveEdge(T startVertex, T endVertex)
@@ -865,7 +860,6 @@ namespace Graph
                     }
 
                     var fromComp = componentsTemp.Keys.Where(l => l.Contains(comp.Value.Key)).FirstOrDefault();
-                    //componentsTemp.Remove(fromComp);
                     var toComp = componentsTemp.Keys.Where(l => l.Contains(comp.Value.Value)).FirstOrDefault();
                     fromComp = fromComp.Union(toComp).ToList();
                     componentsTemp.Remove(toComp);

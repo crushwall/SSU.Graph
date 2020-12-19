@@ -32,12 +32,12 @@ namespace Visualization
 
     public partial class MainWindow : Window
     {
-        Brush vertexBrush = new SolidColorBrush(Color.FromRgb(15, 215, 115));
+        Brush vertexBrush = new SolidColorBrush(Color.FromRgb(255, 170, 45));
         Brush strokeBrush = new SolidColorBrush(Color.FromRgb(0, 0, 0));
         Brush textBrush = new SolidColorBrush(Color.FromRgb(0, 0, 0));
 
-        Brush dinicLevelBrush = new SolidColorBrush(Color.FromRgb(215, 5, 255));
-        Brush dinicFlowBrush = new SolidColorBrush(Color.FromRgb(225, 0, 0));
+        Brush dinicLevelBrush = new SolidColorBrush(Color.FromRgb(255, 55, 45));
+        Brush dinicFlowBrush = new SolidColorBrush(Color.FromRgb(255, 55, 45));
 
         private const int strokeThickness = 2;
         private const int vertexDiam = 50;
@@ -69,7 +69,7 @@ namespace Visualization
                 vertexes.Clear();
                 edges.Clear();
 
-                double step = vertexDiam * 2;
+                double step = vertexDiam * 3;
                 double x = vertexDiam * 0.5;
                 double y = vertexDiam * 0.5;
 
@@ -108,7 +108,8 @@ namespace Visualization
                     double correction = vertexDiam * 0.5; ;
                     foreach (var adj in v.Value)
                     {
-                        if (!graph.Directed && !edges.ContainsKey(new KeyValuePair<int, int>(adj.Key, v.Key)))
+                        if ((!graph.Directed && !edges.ContainsKey(new KeyValuePair<int, int>(adj.Key, v.Key)))
+                            || graph.Directed)
                         {
                             edges.Add(new KeyValuePair<int, int>(v.Key, adj.Key), new Line
                             {
@@ -130,7 +131,28 @@ namespace Visualization
 
         private void AddVertex(Point pos)
         {
-            int v = graph.GraphCollection.Count + 1;
+            var tempVertexes = vertexes.OrderBy(pair => pair.Key).ToDictionary(pair => pair.Key, pair => pair.Value);
+            int v;
+
+            if (tempVertexes.LastOrDefault().Key + 1 != tempVertexes.Count)
+            {
+                v = tempVertexes.FirstOrDefault().Key;
+
+                foreach (var item in tempVertexes)
+                {
+                    if (v + 1 <= item.Key)
+                    {
+                        break;
+                    }
+
+                    v++;
+                }
+            }
+            else
+            {
+                v = tempVertexes.Count;
+            }
+
             graph.AddVertex(v);
 
             vertexes.Add(v, new KeyValuePair<Ellipse, Point>(new Ellipse
@@ -289,6 +311,61 @@ namespace Visualization
             }
         }
 
+        private void Arrow(double x1, double y1, double x2, double y2, Brush brush)
+        {
+            double d = Math.Sqrt(Math.Pow(x2 - x1, 2) + Math.Pow(y2 - y1, 2));
+
+            double X = x2 - x1;
+            double Y = y2 - y1;
+
+            double X3 = x2 - (X / d) * 55;
+            double Y3 = y2 - (Y / d) * 55;
+
+            double Xp = y2 - y1;
+            double Yp = x1 - x2;
+
+            double X4 = X3 + (Xp / d) * 5;
+            double Y4 = Y3 + (Yp / d) * 5;
+            double X5 = X3 - (Xp / d) * 5;
+            double Y5 = Y3 - (Yp / d) * 5;
+
+            var p = new Polygon();
+
+            //Line line = new Line
+            //{
+            //    Stroke = brush,
+            //    X1 = x1,
+            //    Y1 = y1,
+            //    X2 = x2,
+            //    Y2 = y2
+            //};
+            p.Points.Add(new Point(x2, y2));
+
+            //line = new Line
+            //{
+            //    Stroke = brush,
+            //    X1 = x2 - (X / d) * 10,
+            //    Y1 = y2 - (Y / d) * 10,
+            //    X2 = X4,
+            //    Y2 = Y4
+            //};
+            p.Points.Add(new Point(X4, Y4));
+
+
+            //line = new Line
+            //{
+            //    Stroke = brush,
+            //    X1 = x2 - (X / d) * 10,
+            //    Y1 = y2 - (Y / d) * 10,
+            //    X2 = X5,
+            //    Y2 = Y5
+            //};
+            p.Points.Add(new Point(X5, Y5));
+            p.Fill = brush;
+            drawing.Children.Add(p);
+
+        }
+
         private void RenderEdges()
         {
             foreach (var e in edges)
@@ -303,6 +380,11 @@ namespace Visualization
                 Canvas.SetLeft(textBlock, (e.Value.X1 + e.Value.X2) * 0.5);
                 Canvas.SetTop(textBlock, (e.Value.Y1 + e.Value.Y2) * 0.5 - 15);
                 drawing.Children.Add(textBlock);
+
+                if (graph.Directed)
+                {
+                    Arrow(e.Value.X1, e.Value.Y1, e.Value.X2, e.Value.Y2, strokeBrush);
+                }
             }
         }
 
@@ -401,7 +483,8 @@ namespace Visualization
                 double correction = vertexDiam * 0.5; ;
                 foreach (var adj in v.Value)
                 {
-                    if (!graph.Directed && !edges.ContainsKey(new KeyValuePair<int, int>(adj.Key, v.Key)))
+                    if ((!graph.Directed && !edges.ContainsKey(new KeyValuePair<int, int>(adj.Key, v.Key)))
+                        || graph.Directed)
                     {
                         edges.Add(new KeyValuePair<int, int>(v.Key, adj.Key), new Line
                         {
@@ -420,7 +503,13 @@ namespace Visualization
 
             foreach (var ed in edges)
             {
-                var tempWeight = Math.Max(flowGraph[ed.Key.Key][ed.Key.Value], flowGraph[ed.Key.Value][ed.Key.Key]);
+                double tempWeight = flowGraph[ed.Key.Key][ed.Key.Value];
+
+                if (!graph.Directed)
+                {
+                    tempWeight = Math.Max(tempWeight, flowGraph[ed.Key.Value][ed.Key.Key]);
+                }
+
                 if (tempWeight != 0)
                 {
                     drawing.Children.Add(ed.Value);
@@ -428,10 +517,15 @@ namespace Visualization
                     textBlock.FontSize = 18;
                     textBlock.Foreground = vertexBrush;
                     textBlock.Background = textBrush;
-                    textBlock.Text = tempWeight.ToString();
+                    textBlock.Text = $"{tempWeight} / {graph.GraphCollection[ed.Key.Key][ed.Key.Value]}";
                     Canvas.SetLeft(textBlock, (ed.Value.X1 + ed.Value.X2) * 0.5);
                     Canvas.SetTop(textBlock, (ed.Value.Y1 + ed.Value.Y2) * 0.5 - 15);
                     drawing.Children.Add(textBlock);
+
+                    if (graph.Directed)
+                    {
+                        Arrow(ed.Value.X1, ed.Value.Y1, ed.Value.X2, ed.Value.Y2, strokeBrush);
+                    }
                 }
             }
 
@@ -497,6 +591,11 @@ namespace Visualization
                         line.StrokeThickness = strokeThickness;
 
                         drawing.Children.Add(line);
+
+                        if (graph.Directed)
+                        {
+                            Arrow(line.X1, line.Y1, line.X2, line.Y2, dinicLevelBrush);
+                        }
                     }
                 }
             }
@@ -540,7 +639,7 @@ namespace Visualization
                         textBlock.FontSize = 18;
                         textBlock.Foreground = dinicFlowBrush;
                         textBlock.Background = textBrush;
-                        textBlock.Text = flowGraph[temp][adj.Key].ToString();
+                        textBlock.Text = $"{flowGraph[temp][adj.Key]} / {_graph.GraphCollection[temp][adj.Key]}";
 
                         KeyValuePair<int, int> tempE = new KeyValuePair<int, int>(temp, adj.Key);
                         if (!edges.ContainsKey(tempE))
@@ -563,6 +662,11 @@ namespace Visualization
                         line.StrokeThickness = strokeThickness;
 
                         drawing.Children.Add(line);
+
+                        if (graph.Directed)
+                        {
+                            Arrow(line.X1, line.Y1, line.X2, line.Y2, vertexBrush);
+                        }
 
                         return tempFlow;
                     }
@@ -600,7 +704,6 @@ namespace Visualization
 
             while (DinicBFS(source, sink, ref levels, ref flowGraph, ref _graph))
             {
-                //w.ShowDialog();
                 MessageBox.Show("Продолжить?", caption, button, icon);
                 double pushed = DinicDFS(source, sink, double.MaxValue, ref ptr, ref levels, ref flowGraph, ref _graph);
                 RenderVertexes();
@@ -612,8 +715,6 @@ namespace Visualization
                     maxFlow += pushed;
                     pushed = DinicDFS(source, sink, double.MaxValue, ref ptr, ref levels, ref flowGraph, ref _graph);
                     RenderVertexes();
-
-                    MessageBox.Show("Продолжить?", caption, button, icon);
                 }
             }
 

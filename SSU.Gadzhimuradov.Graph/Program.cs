@@ -6,26 +6,13 @@ namespace SSU.Gadzhimuradov.Graph
     {
         static void Main(string[] args)
         {
-            //Tasks.ShowGraph("Входной граф");
-
-            //Tasks.A1Ex16();
-            //Tasks.A1Ex17();
-            //Tasks.B1Ex10();
-
-            //Tasks.A2Ex22();
-            //Tasks.A2Ex28();
-
-            //Tasks.A3Boruvka();
-
-            //Tasks.A4Ex11();
-            //Tasks.B4Ex14();
-            //Tasks.C4Ex17();
-
-            //Tasks.MaximumFlow();
-
             Tasks.Bridges();
 
-            Console.ReadKey(true);
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.Write("\nДля закрытия нажмите ");
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Q");
+            Console.ForegroundColor = ConsoleColor.Gray;
             while (Console.ReadKey().Key != ConsoleKey.Q) { }
         }
     }

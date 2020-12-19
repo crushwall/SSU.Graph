@@ -22,6 +22,8 @@ namespace Visualization
         public InitDinicWindow()
         {
             InitializeComponent();
+
+            sourceBox.Focus();
         }
 
         private void Accept_Click(object sender, RoutedEventArgs e)
